@@ -12,15 +12,15 @@ import java.util.ArrayList;
 
 public class Simplex {
 	// Codigo referente a solucao parcial obtida
-	private static final int NAO_OBTIDA = -1;
+	public static final int NAO_OBTIDA = -1;
 	// Codigo referente a solucao otima obtida
-	private static final int OTIMA = 0;
+	public static final int OTIMA = 0;
 	// Codigo referente a multiplas solucoes obtida
-	private static final int MULT = 1;
+	public static final int MULT = 1;
 	// Codigo referente a solucao impossivel obtida
-	private static final int IMPOSS = 2;
+	public static final int IMPOSS = 2;
 	// Codigo referente a solucao ilimitada obtida
-	private static final int ILIM = 3;
+	public static final int ILIM = 3;
 
 	// Lista de matrizes de resolucao
 	private ArrayList<Matriz> list_mat;
@@ -33,17 +33,19 @@ public class Simplex {
 	*
 	* @param 	mat - Matriz de coeficientes
 	*/
-	public Simplex( double[][] mat ) {
+	public Simplex( Matriz mat ) {
 		list_mat = new ArrayList<Matriz>();
-		list_mat.add( new Matriz( mat ) );
+		list_mat.add( mat.clone() );
 		codSol = NAO_OBTIDA;
+
+		obtSolucao();
 	}
 
 	/**
 	* Obtem a solucao utilizando o algoritmo
 	* de Simplex proposto por Vettsel
 	*/
-	public void obtSolucao() {
+	private void obtSolucao() {
 		Matriz mat = null;
 
 		while( codSol == NAO_OBTIDA ) {
@@ -54,15 +56,23 @@ public class Simplex {
 				mat = list_mat.get( list_mat.size() - 1).clone();
 				int indice = mat.obtVBMLNeg();
 
+				System.out.println( "obtVBMLNeg:" + indice );
+
 				if( indice != mat.NAO_EXISTE ) {
 					indice = mat.obtCPNeg();
-				
+					
+					// System.out.println( "obtCPNeg:" + indice );
+
 					if( indice != mat.NAO_EXISTE ) {
 						indice = mat.obtLP();
 
 						list_mat.add( mat.algTroca() );
 					}
-					else{ codSol = IMPOSS; fimFase = true; }
+					else
+					{ 
+						System.out.println( indice );
+						codSol = IMPOSS; fimFase = true; 
+					}
 				}
 				else { fimFase = true;}
 			}
@@ -75,6 +85,7 @@ public class Simplex {
 				int indice = mat.obtVNBFXPos();
 
 				if( indice != mat.NAO_EXISTE ) {
+					mat.defCP(indice);
 					indice = mat.obtVBPos();
 
 					if( indice != mat.NAO_EXISTE ) {
@@ -85,7 +96,7 @@ public class Simplex {
 					else { codSol = ILIM; fimFase = true; }
 				}
 				else{ 
-					codSol = OTIMA;fimFase = true;
+					codSol = MULT;fimFase = true; 
 				}
 			}
 		}
@@ -97,24 +108,22 @@ public class Simplex {
 	*/
 	public String imprimirSol() {
 		String result = "";
-		if( codSol == OTIMA ) { result = ("A solucao otima foi encontrada!");}
-		else if( codSol == MULT ) { result = ("Uma das diversas solucoes otimas foi encontrada!");}
-		else if( codSol == ILIM ) { result = ("A solucao deste problema e ilimitada!");}
-		else if( codSol == IMPOSS ) { result = ("Nao existe solucao para este problema!"); }
-		else { result = ("A solucao deste problema ainda nao foi encontrada!"); }
+		if( codSol == OTIMA || codSol == MULT) { result += ("A solucao otima foi encontrada!");}
+		else if( codSol == ILIM ) { result += ("A solucao deste problema e ilimitada!");}
+		else if( codSol == IMPOSS ) { result += ("Nao existe solucao para este problema!"); }
+		else { result += ("A solucao deste problema ainda nao foi encontrada!"); }
 
 		int tam = list_mat.size();
 		Matriz mat = list_mat.get( tam - 1 );		
-		String valores = "\n";
+		String valores = "";
 
 		if( codSol == OTIMA || codSol == MULT ) { 
-			valores += String.format( "Z = %.3f\n", Math.abs( mat.obtX_(0) ) );
-			valores += String.format( "X1 = %.3f\n", mat.obtX_(1) );
-			valores += String.format( "X2 = %.3f\n", mat.obtX_(2) );
+			valores += String.format( "\nZ = %.3f", mat.obtZ() );
+			valores += String.format( "\nX1 = %.3f", mat.obtX_(1) );
+			valores += String.format( "\nX2 = %.3f", mat.obtX_(2) );
 		}
 
 		result += valores;
-
 		return result;
 	}
 
@@ -127,6 +136,16 @@ public class Simplex {
 	public ArrayList<Matriz> obtMatSCS()
 	{
 		return list_mat;
+	}
+
+	/**
+	* Retorna o codigo da solucao obtido pelo Simplex
+	*
+	* @return Codigo (int) da solucao obtida por este.
+	*/
+	public int obtCodSol()
+	{
+		return codSol;
 	}
 }
 

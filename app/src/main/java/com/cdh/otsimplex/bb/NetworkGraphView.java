@@ -62,9 +62,15 @@ public class NetworkGraphView extends View {
 
         Set<Map.Entry<String, Point>> datas = data.entrySet();
 
+        Point last = null;
         for (Map.Entry<String, Point> tmp: datas) {
 
             drawNode(canvas, tmp.getValue());
+            if (last != null) {
+                drawEdge(canvas, last, tmp.getValue());
+            }
+            last = tmp.getValue();
+
 //            canvas.drawCircle(tmp.getValue().x, tmp.getValue().y, radius, paint);
 //            canvas.drawCircle(50, 500, radius, paint);
 

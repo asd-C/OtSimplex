@@ -1,7 +1,5 @@
 package com.cdh.otsimplex.etc;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 
 /**
@@ -47,15 +45,16 @@ public class Ponto
 		{
 			double y = f/(double)b;
 
-			lista_pontos.add( new Ponto( max_val , y ) );
 			lista_pontos.add( new Ponto( 0 , y ) );
+			lista_pontos.add( new Ponto( max_val , y ) );
 		}
 		else if( b == 0.0 )
 		{
 			double y = f/(double)a;
+			
 
-			lista_pontos.add( new Ponto( y, max_val) );
 			lista_pontos.add( new Ponto( y , 0 ) );
+			lista_pontos.add( new Ponto( y, max_val) );
 		}
 		else
 		{

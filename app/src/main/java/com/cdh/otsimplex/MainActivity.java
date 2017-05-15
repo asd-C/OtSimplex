@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -22,7 +21,6 @@ import android.widget.TextView;
 import com.cdh.otsimplex.bb.BBActivity;
 import com.cdh.otsimplex.detail.DetailActivity;
 import com.cdh.otsimplex.detail.DetailPageFragment;
-import com.cdh.otsimplex.etc.Cnvt;
 import com.cdh.otsimplex.simplex.Matriz;
 import com.cdh.otsimplex.simplex.Simplex;
 
@@ -158,8 +156,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String[][] inputs = getAllInput();
         String result;
 
-        Simplex s = new Simplex(Cnvt.cnvtSimplex(inputs));
-        s.obtSolucao();
+        Simplex s = new Simplex(new Matriz(inputs));
         result = s.imprimirSol();
         ArrayList<Matriz> matrizs = s.obtMatSCS();
 
