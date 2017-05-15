@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">OtimApp</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="max">Maximizar</string>
+    <string name="min">Minimizar</string>
+
+    <string name="fo">Z =</string>
+
+    <string name="restrictions">Restrições</string>
+
+    <string name="x1">&#160;X1 +&#160;</string>
+    <string name="x2">&#160;X2</string>
+
+    <string name="great_equal">&gt;=</string>
+    <string name="less_equal">&lt;=</string>
+    <string name="equal">=</string>
+
+    <string name="result">Resposta aqui...</string>
+
+    <string-array name="ops">
+        <item>@string/less_equal</item>
+        <item>@string/great_equal</item>
+        <item>@string/equal</item>
+    </string-array>
+</resources>
