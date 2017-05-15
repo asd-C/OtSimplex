@@ -19,6 +19,7 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.cdh.otsimplex.bb.BBActivity;
 import com.cdh.otsimplex.detail.DetailActivity;
 import com.cdh.otsimplex.detail.DetailPageFragment;
 import com.cdh.otsimplex.etc.Cnvt;
@@ -393,6 +394,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
         dismissKeyboard(this);
+    }
+
+    public void bb(View v) {
+        startActivity(new Intent(this, BBActivity.class));
     }
 
     private void infobox(String info) {

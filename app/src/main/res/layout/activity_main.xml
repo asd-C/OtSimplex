@@ -166,6 +166,17 @@
                 android:background="@drawable/button_bg"
                 android:textColor="@color/colorAccent"
                 android:text="simplex"/>
+
+
+            <Button
+                android:id="@+id/btn_bb"
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/button_bg"
+                android:textColor="@color/colorAccent"
+                android:text="bb"
+                android:onClick="bb"/>
         </LinearLayout>
 
     </RelativeLayout>
