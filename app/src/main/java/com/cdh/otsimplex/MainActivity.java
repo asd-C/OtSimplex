@@ -19,6 +19,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.cdh.otsimplex.bb.BBActivity;
+import com.cdh.otsimplex.branch.BranchBound;
 import com.cdh.otsimplex.detail.DetailActivity;
 import com.cdh.otsimplex.detail.DetailPageFragment;
 import com.cdh.otsimplex.simplex.Matriz;
@@ -393,8 +394,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dismissKeyboard(this);
     }
 
+    public void branchbound() {
+        String[][] inputs = getAllInput();
+        String result;
+
+        BranchBound bb = new BranchBound(new Matriz(inputs), inputs[0][3]);
+        result = bb.toStrSolMsg();
+        bb.obtRaiz();
+
+//        createBundles(matrizs, getConstraints(inputs));
+
+        // mostrar resultado no textview
+        tv_output.setText(result);
+    }
+
     public void bb(View v) {
-        startActivity(new Intent(this, BBActivity.class));
+        if (verifyInputs()) {
+            branchbound();
+        } else {
+            infobox("Erro! Verifique seus dados!");
+        }
+//        startActivity(new Intent(this, BBActivity.class));
     }
 
     private void infobox(String info) {
