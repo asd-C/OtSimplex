@@ -19,6 +19,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.cdh.otsimplex.bb.BBActivity;
+import com.cdh.otsimplex.bb.BBData;
 import com.cdh.otsimplex.branch.BranchBound;
 import com.cdh.otsimplex.detail.DetailActivity;
 import com.cdh.otsimplex.detail.DetailPageFragment;
@@ -112,8 +113,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             // Obter o melhor ponto(x1, x2) temporal(parcial) e passar pra fragment
             // que vai desenhar grafico
-            bundle.putDouble(DetailPageFragment.X1, matrizs.get(i).obtX_(1));
-            bundle.putDouble(DetailPageFragment.X2, matrizs.get(i).obtX_(2));
+            bundle.putDouble(DetailPageFragment.X1, matrizs.get(i).obtX_(1).doubleValue());
+            bundle.putDouble(DetailPageFragment.X2, matrizs.get(i).obtX_(2).doubleValue());
 
             // Obter a tabela com todos elementos superiores
             String[][] matrizElems = matrizs.get(i).toStringSCS();
@@ -141,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             bundle.putStringArrayList(DetailPageFragment.TABLE, table);
 
             // Passar para fragment a quantidade de restricoes
-            bundle.putInt(DetailPageFragment.number_of_restrictions, contraints.size());
+            bundle.putInt(DetailPageFragment.number_of_restrictions, constraits.length);
 
             // Passar as restricoes para desenhar o grafico
             bundle.putStringArrayList(DetailPageFragment.GRAPH, graph);
@@ -400,21 +401,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         BranchBound bb = new BranchBound(new Matriz(inputs), inputs[0][3]);
         result = bb.toStrSolMsg();
-        bb.obtRaiz();
+        BBData.root = bb.obtRaiz();
 
-//        createBundles(matrizs, getConstraints(inputs));
-
-        // mostrar resultado no textview
-        tv_output.setText(result);
+//        infobox(result);
     }
 
     public void bb(View v) {
         if (verifyInputs()) {
             branchbound();
+            startActivity(new Intent(this, BBActivity.class));
         } else {
             infobox("Erro! Verifique seus dados!");
         }
-//        startActivity(new Intent(this, BBActivity.class));
+        dismissKeyboard(this);
     }
 
     private void infobox(String info) {

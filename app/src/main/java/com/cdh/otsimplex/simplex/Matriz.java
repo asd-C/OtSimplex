@@ -13,12 +13,16 @@ package com.cdh.otsimplex.simplex;
 
 import com.cdh.otsimplex.etc.Cnvt;
 
+import java.math.*;
+
 public class Matriz {
 	// Codigo para identificar que o indice nao existe
 	public static final int NAO_EXISTE = -1;
 	// Na nossa aplicação é permitido somente x1 e x2 como
 	// variaveis não básicas
 	private static final int QTD_VNB = 3; // Inclui a coluna ML
+
+	private static final MathContext APP_RULES = new MathContext( 5, RoundingMode.HALF_UP );
 
 	// Quantidade de Variaveis Basicas
 	private int qtd_vb;
@@ -31,9 +35,9 @@ public class Matriz {
 	// variaveis nao basicas
 	private int[] vnb_ids;
 	// Matriz de sub celulas superiores
-	private double[][] scs;
+	private BigDecimal[][] scs;
 	// Matriz de sub celulas inferiores
-	private double[][] sci;
+	private BigDecimal[][] sci;
 	
 	/**
 	* Construtor: Este clona a matriz em parametro, para se
@@ -42,21 +46,21 @@ public class Matriz {
 	*
 	* @param 	mat - Matriz de SCS
 	*/
-	public Matriz( double[][] mat ) {
+	public Matriz( BigDecimal[][] mat ) {
 		qtd_vb = mat.length;
 
 		vb_ids = new int[qtd_vb];
 		vnb_ids = new int[ QTD_VNB ];
 
-		scs = new double[ qtd_vb ][ QTD_VNB ];
-		sci = new double[ qtd_vb ][ QTD_VNB ];
+		scs = new BigDecimal[ qtd_vb ][ QTD_VNB ];
+		sci = new BigDecimal[ qtd_vb ][ QTD_VNB ];
 		
 		for( int i = 0; i < qtd_vb; i++ ) {
 			vb_ids[ i ] = ( i - 1 ) + QTD_VNB;
 
 			for( int j = 0; j < QTD_VNB; j++ ) {
-				sci[i][j] = 0.0;
-				scs[i][j] = mat[i][j];
+				sci[i][j] = new BigDecimal("0.0");
+				scs[i][j] = copy( mat[i][j] );
 			}
 		}
 
@@ -103,25 +107,25 @@ public class Matriz {
 	* @param 	mat - Matriz de SCS
 	* @param 	res - Restricao a ser adicionada
 	*/
-	public Matriz( Matriz mat , double[] res )
+	public Matriz( Matriz mat , BigDecimal[] res )
 	{
-		double[][] matSCS = mat.obtSCS();
+		BigDecimal[][] matSCS = mat.obtSCS();
 
 		qtd_vb = matSCS.length + 1;
 
-		vb_ids = new int[qtd_vb];
+		vb_ids = new int[ qtd_vb ];
 		vnb_ids = new int[ QTD_VNB ];
 
-		scs = new double[ qtd_vb ][ QTD_VNB ];
-		sci = new double[ qtd_vb ][ QTD_VNB ];
+		scs = new BigDecimal[ qtd_vb ][ QTD_VNB ];
+		sci = new BigDecimal[ qtd_vb ][ QTD_VNB ];
 		
 		int i;
 		for( i = 0; i < qtd_vb - 1; i++ ) {
 			vb_ids[ i ] = ( i - 1 ) + QTD_VNB;
 
 			for( int j = 0; j < QTD_VNB; j++ ) {
-				sci[i][j] = 0.0;
-				scs[i][j] = matSCS[i][j];
+				sci[i][j] = new BigDecimal( "0.0" );
+				scs[i][j] = copy( matSCS[i][j] );
 			}
 		}
 
@@ -129,8 +133,8 @@ public class Matriz {
 		for( int j = 0; j < QTD_VNB; j++ )
 		{
 			vnb_ids[ j ] = j;
-			sci[i][j] = 0.0;
-			scs[i][j] = res[j];		 
+			sci[i][j] = new BigDecimal( "0.0" );
+			scs[i][j] = copy( res[j] );		 
 		}
 
 		vnb_ids[0] = 0;
@@ -149,14 +153,14 @@ public class Matriz {
 	* @param 	vnb_ids - Identificadores das VNBs correntes
 	* @param 	vnb_ids - Identificadores das VBs correntes
 	*/
-	public Matriz( double[][] mat, int[] vnb_ids, int[] vb_ids ) {
+	public Matriz( BigDecimal[][] mat, int[] vnb_ids, int[] vb_ids ) {
 		qtd_vb = mat.length;
 
 		this.vb_ids = new int[qtd_vb];
 		this.vnb_ids = new int[ QTD_VNB ];
 
-		scs = new double[ qtd_vb ][ QTD_VNB ];
-		sci = new double[ qtd_vb ][ QTD_VNB ];
+		scs = new BigDecimal[ qtd_vb ][ QTD_VNB ];
+		sci = new BigDecimal[ qtd_vb ][ QTD_VNB ];
 		
 
 		for( int i = 0; i < qtd_vb; i++ ) { this.vb_ids[i] = vb_ids[i]; }
@@ -164,8 +168,8 @@ public class Matriz {
 
 		for( int i = 0; i < qtd_vb; i++ ) {
 			for( int j = 0; j < QTD_VNB; j++ ) {
-				sci[i][j] = 0.0;
-				scs[i][j] = mat[i][j];
+				sci[i][j] = new BigDecimal( "0.0");
+				scs[i][j] = copy( mat[i][j] );
 			}
 		}
 
@@ -194,7 +198,7 @@ public class Matriz {
 
 		// Procura a VB com ML negativo
 		for( int i = 1; i < qtd_vb && indice == -1; i++ ) {
-			if( scs[i][0] < 0.0 ) 
+			if( scs[i][0].compareTo( BigDecimal.ZERO ) < 0 ) 
 			{
 				indice = i;
 			}
@@ -215,7 +219,7 @@ public class Matriz {
 
 		// Procura a VNB positiva
 		for( int j = 1; j < QTD_VNB && indice == -1; j++ ) {
-			if( scs[0][j] > 0.0 ) { indice = j; }
+			if( scs[0][j].compareTo( BigDecimal.ZERO ) > 0 ) { indice = j; }
 		}
 
 		return indice;
@@ -236,7 +240,7 @@ public class Matriz {
 
 		// Procura o elemento negativo
 		for( int j = 1; j < QTD_VNB && indice == -1; j++ ) {
-			if( scs[vbmlneg][j] < 0.0 ) 
+			if( scs[vbmlneg][j].compareTo( BigDecimal.ZERO ) < 0 ) 
 			{ 
 				indice = j; 
 			}
@@ -262,7 +266,7 @@ public class Matriz {
 
 		// Procura o elemento positivo
 		for( int i = 1; i < qtd_vb && indice == -1; i++ ) {
-			if( scs[i][cp] > 0.0 ) { indice = i;}
+			if( scs[i][cp].compareTo( BigDecimal.ZERO ) > 0 ) { indice = i;}
 		}
 
 		return indice;
@@ -278,13 +282,23 @@ public class Matriz {
 	*/
 	public int obtLP() {
 		int indice = NAO_EXISTE;
-		double menor = Double.MAX_VALUE;
+		BigDecimal menor = new BigDecimal( Double.MAX_VALUE );
 
 		// Procura o menor quociente
 		for( int i = 1; i < qtd_vb; i++ ) {
-			double val = scs[i][0] / scs[i][cp];
+			boolean div_zero = scs[i][cp].compareTo(BigDecimal.ZERO) == 0;
+			boolean den_maior_zero = scs[i][cp].compareTo( BigDecimal.ZERO ) > 0;
+			if( !div_zero && den_maior_zero )
+			{
+				BigDecimal val = scs[i][0].divide( scs[i][cp] , APP_RULES );
+				boolean menor_menor = val.compareTo( menor ) < 0;
 
-			if( val > 0.0 && val < menor ) { menor = val; indice = i; }
+				if( menor_menor ) 
+				{ 
+					menor = copy(val); 
+					indice = i; 
+				}
+			}
 		}
 
 		lp = indice;
@@ -311,20 +325,26 @@ public class Matriz {
 	* @return	Matriz: A nova matriz de SCS apos a troca
 	*/
 	public Matriz algTroca() {
-		double[][] nova_scs = new double[qtd_vb][QTD_VNB];
+		BigDecimal[][] nova_scs = new BigDecimal[qtd_vb][QTD_VNB];
 
 		// SCI do EP
-		double ep_inv = 1/scs[lp][cp];
-		sci[lp][cp] = ep_inv;
+		BigDecimal ep_inv = BigDecimal.ONE.divide( scs[lp][cp], APP_RULES );
+		sci[lp][cp] = copy( ep_inv );
 
 		// Multiplica a SCS da linha pela SCI do EP
 		for( int j = 0; j < QTD_VNB; j++ ) {
-			if( j != cp ) { sci[lp][j] = scs[lp][j] * ep_inv; }
+			if( j != cp ) 
+			{ 
+				sci[lp][j] = scs[lp][j].multiply( ep_inv, APP_RULES );
+			}
 		}
 
 		// Multiplica a SCS da coluna por -SCI do EP
 		for( int i = 0; i < qtd_vb; i++ ) {
-			if( i != lp ) { sci[i][cp] = scs[i][cp] * (-ep_inv); }
+			if( i != lp ) 
+			{ 
+				sci[i][cp] = scs[i][cp].multiply( ep_inv.negate() , APP_RULES ); 
+			}
 		}
 
 		// Multiplicar a SCS marcada em sua respectiva coluna
@@ -333,11 +353,12 @@ public class Matriz {
 			if( i != lp ) {
 				for( int j = 0; j < QTD_VNB; j++ ) {
 					if( j != cp ) {
-						sci[i][j] = scs[lp][j] * sci[i][cp];
+						sci[i][j] = scs[lp][j].multiply( sci[i][cp], APP_RULES );
 					}
 				}
 			}
 		}
+
 
 		// Troca-se o id da LP pelo CP
 		int aux = vnb_ids[cp];
@@ -347,10 +368,10 @@ public class Matriz {
 		// Todas as SCI de LP e CP sao copiadas para suas
 		// respectivas SCS na nova tabela
 		for( int j = 0; j < QTD_VNB; j++ ) {
-			nova_scs[lp][j] = sci[lp][j];
+			nova_scs[lp][j] = copy( sci[lp][j] );
 		}
 		for( int i = 0; i < qtd_vb; i++ ) {
-			nova_scs[i][cp] = sci[i][cp];
+			nova_scs[i][cp] = copy( sci[i][cp] );
 		}
 
 		// Somam-se as SCI com as SCS das demais celulas
@@ -359,7 +380,7 @@ public class Matriz {
 			if( i != lp ) {
 				for( int j = 0; j < QTD_VNB; j++ ) {
 					if( j != cp ) {
-						nova_scs[i][j] = scs[i][j] + sci[i][j];
+						nova_scs[i][j] = scs[i][j].add( sci[i][j] );
 					}
 				}
 			}
@@ -375,15 +396,15 @@ public class Matriz {
 	* @return	0, se nao constar como variavel basica na
 	*			atual matriz de SCS; ou double, caso conste
 	*/
-	public double obtX_( int id )
+	public BigDecimal obtX_( int id )
 	{
-		double x_ = 0.0;
+		BigDecimal x_ = BigDecimal.ZERO;
 
 		for( int i = 1; i < vb_ids.length; i++ )
 		{
 			if( vb_ids[i] == id )
 			{
-				x_ = scs[ i ][0];
+				x_ = copy( scs[ i ][0] );
 				break;
 			}
 		}
@@ -396,11 +417,11 @@ public class Matriz {
 	*
 	* @return	Valor absoluto de Z
 	*/
-	public double obtZ()
+	public BigDecimal obtZ()
 	{
 		// Como a grandeza pode ser Max ou min, >= ou <=,
 		// Então normaliza para seu módulo
-		return Math.abs( scs[0][0] );
+		return scs[0][0].abs(APP_RULES);
 	}
 
 
@@ -429,7 +450,39 @@ public class Matriz {
 		// Escreve os coeficientes
 		for( int i = 0; i < qtd_vb; i++ ) {
 			for( int j = 0; j < QTD_VNB; j++ ) {
-				str[i+1][j+1] = String.format( "%.3f",scs[i][j] );
+				str[i+1][j+1] = scs[i][j].toString();
+			}
+		}
+
+		return str;
+	}
+
+	/**
+	* Converte a matriz de subcelulas superiores em uma
+	* matriz de String
+	*/
+	public String[][] toStringSCI() {
+
+		String[][] str = new String[qtd_vb + 1][QTD_VNB + 1];
+		
+		str[0][0] = "-";
+		str[0][1] = "ML";
+		str[1][0] = "f(x)";
+
+		// Escreve as variaveis nao basicas
+		for( int i = 1; i < QTD_VNB; i++ ) {
+			str[0][i+1] = "x_" + vnb_ids[i];
+		}
+
+		//Escreve as variaveis basicas
+		for( int i = 1; i < qtd_vb; i++ ) {
+			str[i+1][0] = "x_" + vb_ids[i];
+		}
+
+		// Escreve os coeficientes
+		for( int i = 0; i < qtd_vb; i++ ) {
+			for( int j = 0; j < QTD_VNB; j++ ) {
+				str[i+1][j+1] = sci[i][j].toString();
 			}
 		}
 
@@ -442,8 +495,41 @@ public class Matriz {
 	* @return	double[][] com os valores das sub celulas
 	*			superiores
 	*/
-	public double[][] obtSCS()
+	public BigDecimal[][] obtSCS()
 	{
 		return scs;
+	}
+
+	private static BigDecimal copy( BigDecimal num )
+	{
+		return num.add(BigDecimal.ZERO, APP_RULES);
+	}
+
+	public void imprimirSCS()
+	{
+		String[][] scsString = toStringSCS();
+
+		for( String[] line : scsString )
+		{
+			for( String col : line )
+			{
+				System.out.print( col + "\t" );
+			}
+			System.out.println();
+		}
+	}
+
+	public void imprimirSCI()
+	{
+		String[][] sciString = toStringSCI();
+
+		for( String[] line : sciString )
+		{
+			for( String col : line )
+			{
+				System.out.print( col + "\t" );
+			}
+			System.out.println();
+		}
 	}
 }

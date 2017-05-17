@@ -54,14 +54,11 @@ public class Simplex {
 			// Primeira Fase
 			while( !fimFase ) {
 				mat = list_mat.get( list_mat.size() - 1).clone();
-				int indice = mat.obtVBMLNeg();
 
-				System.out.println( "obtVBMLNeg:" + indice );
+				int indice = mat.obtVBMLNeg();
 
 				if( indice != mat.NAO_EXISTE ) {
 					indice = mat.obtCPNeg();
-					
-					// System.out.println( "obtCPNeg:" + indice );
 
 					if( indice != mat.NAO_EXISTE ) {
 						indice = mat.obtLP();
@@ -70,7 +67,6 @@ public class Simplex {
 					}
 					else
 					{ 
-						System.out.println( indice );
 						codSol = IMPOSS; fimFase = true; 
 					}
 				}
@@ -82,10 +78,12 @@ public class Simplex {
 			// Segunda fase
 			while( !fimFase && codSol == NAO_OBTIDA ) {
 				mat = list_mat.get( list_mat.size() - 1).clone();
+
 				int indice = mat.obtVNBFXPos();
 
 				if( indice != mat.NAO_EXISTE ) {
-					mat.defCP(indice);
+					mat.defCP( indice );
+
 					indice = mat.obtVBPos();
 
 					if( indice != mat.NAO_EXISTE ) {
@@ -108,7 +106,7 @@ public class Simplex {
 	*/
 	public String imprimirSol() {
 		String result = "";
-		if( codSol == OTIMA || codSol == MULT) { result += ("A solucao otima foi encontrada!");}
+		if( codSol == OTIMA || codSol == MULT ) { result += ("A solucao otima foi encontrada!");}
 		else if( codSol == ILIM ) { result += ("A solucao deste problema e ilimitada!");}
 		else if( codSol == IMPOSS ) { result += ("Nao existe solucao para este problema!"); }
 		else { result += ("A solucao deste problema ainda nao foi encontrada!"); }
@@ -124,6 +122,7 @@ public class Simplex {
 		}
 
 		result += valores;
+
 		return result;
 	}
 

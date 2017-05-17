@@ -10,6 +10,8 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.cdh.otsimplex.bb.entity.Point;
+import com.cdh.otsimplex.branch.BranchBound;
+import com.cdh.otsimplex.branch.No;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,33 +24,19 @@ import java.util.Set;
 public class NetworkGraphView extends View {
 
     private Paint paint;
-    private static float radius = 100;
-    private HashMap<String, Point> data;
+    private static float radius = 120;
+    private static float spaceV = radius * 3;
+    private static float spaceH = radius * 2.5f;
+    private static float textSize = radius * 0.05f;
 
     public NetworkGraphView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        data = new HashMap<>();
         paint = new Paint();
         paint.setStyle(Paint.Style.STROKE);
     }
 
     public void updateData() {
-        Point point = new Point();
-        point.x = 500;
-        point.y = 100;
-        data.put("hi", point);
-
-        point = new Point();
-        point.x = getWidth()/2;
-        point.y = getHeight()/2;
-        data.put("hi2", point);
-
-
-        point = new Point();
-        point.x = 500;
-        point.y = getHeight();
-        data.put("hi3", point);
 
         invalidate();
     }
@@ -60,26 +48,42 @@ public class NetworkGraphView extends View {
         paint.setColor(Color.BLACK);
         paint.setStrokeWidth(5f);
 
-        Set<Map.Entry<String, Point>> datas = data.entrySet();
+        Point p1 = new Point();
+        p1.x = radius;
+        p1.y = radius;
+        No no = BBData.root;
 
-        Point last = null;
-        for (Map.Entry<String, Point> tmp: datas) {
-
-            drawNode(canvas, tmp.getValue());
-            if (last != null) {
-                drawEdge(canvas, last, tmp.getValue());
-            }
-            last = tmp.getValue();
-
-//            canvas.drawCircle(tmp.getValue().x, tmp.getValue().y, radius, paint);
-//            canvas.drawCircle(50, 500, radius, paint);
-
-//            canvas.drawLine(width/2, 50 + radius, 50, 500 - radius, paint);
+        if (no != null) {
+            drawNode(canvas, p1, no);
+            recursiveDraw(no, p1, canvas);
         }
-
     }
 
-    private void drawEdge(Canvas canvas, Point point1, Point point2) {
+    float lastX;
+    private void recursiveDraw(No no, Point p1, Canvas canvas) {
+        p1 = new Point(p1.x, p1.y);
+        Point p2 = new Point();
+        p2.y = p1.y + spaceV;
+        p2.x = radius;
+        System.out.println(no.toString());
+        for (No[] tmps: no.obtFilhos()) {
+
+            if (tmps == null) continue;
+
+            for (No tmp: tmps) {
+
+                if (tmp == null) continue;
+
+                drawNode(canvas, new Point(p2.x, p2.y), tmp);
+                drawEdge(canvas, new Point(p1.x, p1.y), new Point(p2.x, p2.y), tmp);
+                p2.x += spaceH;
+
+                recursiveDraw(tmp, p2, canvas);
+            }
+        }
+    }
+
+    private void drawEdge(Canvas canvas, Point point1, Point point2, No no) {
 
         float textSize = 12 * getResources().getDisplayMetrics().density;
 
@@ -88,12 +92,13 @@ public class NetworkGraphView extends View {
 
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(textSize);
-        canvas.drawText("z=10", (point1.x + point2.x) / 2, (point1.y + point2.y) / 2, paint);
+        canvas.drawText(no.toStrUltRes(), (point1.x + point2.x) / 2, (point1.y + point2.y) / 2, paint);
     }
 
-    private void drawNode(Canvas canvas, Point point) {
+    private void drawNode(Canvas canvas, Point point, No no) {
 
-        float textSize = 12 * getResources().getDisplayMetrics().density;
+        String[] texts = no.toString().split("\n");
+        float textSize = this.textSize * getResources().getDisplayMetrics().density;
         float textX = point.x - radius / 2;
 
         paint.setStyle(Paint.Style.STROKE);
@@ -102,9 +107,11 @@ public class NetworkGraphView extends View {
         paint.setStyle(Paint.Style.FILL);
         paint.setTextSize(textSize);
 
-        canvas.drawText("x=10", textX, point.y - textSize, paint);
-        canvas.drawText("y=10", textX, point.y, paint);
-        canvas.drawText("z=10", textX, point.y + textSize, paint);
+        if (no.obtTS() != BranchBound.IMPOSS) {
+            canvas.drawText(texts[1], textX, point.y - textSize, paint);
+            canvas.drawText(texts[2], textX, point.y, paint);
+            canvas.drawText(texts[3], textX, point.y + textSize, paint);
+        }
     }
 
     @Override

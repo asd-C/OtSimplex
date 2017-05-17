@@ -1,5 +1,8 @@
 package com.cdh.otsimplex.etc;
 
+import java.math.*;
+
+
 /**
 * Esta classe e responsavel por converter os 
 * parametros obtidos pela aplicacao em uma matriz
@@ -17,14 +20,14 @@ public class Cnvt
 	*
 	* @param 	matriz - Matriz de String que contém os coeficientes
 	*						e a grandeza de cada linha
-	* @return	double[][] que servirá de entrada para o algoritmo
+	* @return	BigDecimal[][] que servirá de entrada para o algoritmo
 	*			Simplex
 	*/
-	public static double[][] cnvtMat( String[][] matriz )
+	public static BigDecimal[][] cnvtMat( String[][] matriz )
 	{
 		int linhas = matriz.length;
 
-		double[][] cnvt = new double[linhas][];
+		BigDecimal[][] cnvt = new BigDecimal[linhas][];
 
 		for( int i = 0; i < linhas; i++ )
 		{	
@@ -44,11 +47,11 @@ public class Cnvt
 	* @return	double[] que servirá como uma linha da entrada do algoritmo
 	*			Simplex
 	*/
-	public static double[] cnvtLinha ( String[] linha )
+	public static BigDecimal[] cnvtLinha ( String[] linha )
 	{
 		int tam = linha.length - 1;
 
-		double[] cnvt = new double[ tam ];
+		BigDecimal[] cnvt = new BigDecimal[ tam ];
 		int tipo = 1;
 
 		if( linha[ tam ].equalsIgnoreCase("min")
@@ -58,7 +61,8 @@ public class Cnvt
 		}	
 
 		for ( int i = 0; i < tam; i++ ) {
-			cnvt[i] = Double.parseDouble( linha[i] ) * tipo;
+			cnvt[i] = new BigDecimal( linha[i] );
+			cnvt[i] = cnvt[i].multiply( BigDecimal.valueOf( tipo ) );
 		}
 
 		return cnvt;

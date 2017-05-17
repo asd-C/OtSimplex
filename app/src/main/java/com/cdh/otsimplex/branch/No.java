@@ -42,6 +42,8 @@ public class No
 	// Ultima restricao adicionada
 	private String[] ultimaRes;
 
+	private int nivel;
+
 	/**
 	* Construtor: Constroi um novo no a partir da matriz
 	* inicial do pai, sendo acrescido de uma nova restricao,
@@ -52,13 +54,14 @@ public class No
 	* @param 	novaRes - Restricao a ser adicionada por este
 	* @param 	id - Identificador deste no
 	*/
-	public No(Matriz mat, String[] novaRes, int id )
+	public No(Matriz mat, String[] novaRes, int id, int nivel )
 	{
 		ultimaRes = novaRes;
 
 		Matriz novaMat = new Matriz( mat, novaRes );
 		simplex = new Simplex( novaMat );
 
+		this.nivel = nivel;
 		ts = 0;
 		this.id = id;
 
@@ -84,7 +87,7 @@ public class No
 		ultimaRes = null;
 
 		simplex = new Simplex( mat );
-
+		nivel = 0;
 		id = 0;
 
 		filhos = new No[NUM_VARS][NUM_GRAND];
@@ -96,6 +99,11 @@ public class No
 				filhos[i][j] = null;
 			}
 		}
+	}
+
+	public int obtNivel()
+	{
+		return nivel;
 	}
 
 	/**
@@ -214,6 +222,16 @@ public class No
 	}
 
 	/**
+	* Retorna todos os filhos deste no
+	*
+	* @return Array de nos (filhos)
+	*/
+	public No[][] obtFilhos()
+	{
+		return filhos;
+	}
+
+	/**
 	* Define o no com a variavel id, em parametro,
 	* do lado informado: ESQ ou DIR;
 	*
@@ -227,7 +245,7 @@ public class No
 	*/
 	public void defNo( int id , int lado, Matriz mat , String[] novaRes , int idNo )
 	{
-		filhos[id-1][lado] = new No( mat , novaRes , idNo );
+		filhos[id-1][lado] = new No( mat , novaRes , idNo, nivel + 1  );
 	}
 
 	/**

@@ -7,20 +7,42 @@ import java.util.Stack;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.math.*;
 
 
+/**
+* Esta classe remete ao método Branch And Bound
+* para obtenção de soluções de problemas lineares.
+* Possui, somente, o ponteiro do no raiz, e do no otimo
+* encontrado ate o momento. Tipo remete a grandeza da funcao,
+* se e de maximizacao ou de minimizacao, e numNos, o numero de nos
+* existentes na arvore.
+*
+* @author Dehua Chen
+* @author Felipe Belem
+*/
 public class BranchBound
 {
+	// Tipo da solução, onde NULO não é inteiro, e CAND,
+	// candidato a otimo.
 	public static final int NULO = 0;
 	public static final int IMPOSS = 1;
 	public static final int OTIMO = 2;
 	public static final int CAND = 3;
+
+	private static final int MAX_NIVEIS = 3;
 
 	private No raiz;
 	private No otimo;
 	private int tipo;
 	private int numNos;
 
+	/**
+	* Determina a matriz originaria do BaB e qual a sua grandeza
+	*
+	* @param m: Matriz inicial do BaB
+	* @param tipo: Grandeza da função (MAX ou MIN)
+	*/
 	public BranchBound(Matriz m , String tipo )
 	{
 		raiz = new No( m );
@@ -39,115 +61,99 @@ public class BranchBound
 		obtSol();
 	}
 
-	private void obtSol() 
-	{
-		Stack<No> pilha = new Stack<No>();
+	/**
+	* Obtem a solucao do problema
+	*/
+    private void obtSol()
+    {
+        Stack<No> pilha = new Stack<No>();
 
-		pilha.add(raiz);
+        pilha.add(raiz);
 
-		while( !pilha.empty() )
-		{
-			No atual = pilha.pop();
+        // Para cada no que deve ser expandido
+        while( !pilha.empty() )
+        {
+            No atual = pilha.pop();
 
-			System.out.println( "\nNo ATUAL " + atual.obtID() );
-			System.out.println( atual.toStrUltRes() + "\n" );
-			System.out.println( "ORIGEM-------------------------");
-			Matriz m = atual.obtSrcMat();
-			for( String[] l : m.toStringSCS() )
-			{
-				for( String pos : l )
-				{
-					System.out.print( pos + "\t");
-				}
-				System.out.println();
-			}
-			System.out.println();
-			System.out.println( "SOLUCAO-------------------------");
-			m = atual.obtSolMat();
-			for( String[] l : m.toStringSCS() )
-			{
-				for( String pos : l )
-				{
-					System.out.print( pos + "\t");
-				}
-				System.out.println();
-			}
-			System.out.println("-----------------------------");
+            int codSimplex = atual.obtCodSim();
 
-			int codSimplex = atual.obtCodSim();
+            // Não há como expandir esse no
+            if( codSimplex == Simplex.IMPOSS || codSimplex == Simplex.ILIM )
+            {
+                atual.defTSCod(IMPOSS);
+            }
+            else
+            {
+                // Verificar se a solucao obtida e inteira
+                Matriz mat = atual.obtSolMat();
 
-			if( codSimplex == Simplex.IMPOSS || codSimplex == Simplex.ILIM )
-			{
-				System.out.println( "IMPOSS ou ILIM!");
-				atual.defTSCod(IMPOSS);
-			}
-			else
-			{
-				Matriz mat = atual.obtSolMat();
+                BigDecimal x1 = mat.obtX_(1);
+                BigDecimal x2 = mat.obtX_(2);
 
-				double x1Esq = Math.floor( (float)mat.obtX_(1) );
-				double x1Dir = Math.ceil( (float)mat.obtX_(1) );
+                BigDecimal x1Esq = x1.setScale(0 , RoundingMode.FLOOR);
+                BigDecimal x1Dir = x1.setScale(0 , RoundingMode.CEILING);
 
-				double x2Esq = Math.floor( (float)mat.obtX_(2) );
-				double x2Dir = Math.ceil( (float)mat.obtX_(2) );
+                BigDecimal x2Esq = x2.setScale(0 , RoundingMode.FLOOR);
+                BigDecimal x2Dir = x2.setScale(0 , RoundingMode.CEILING);
 
-				if( x1Esq == x1Dir && x2Esq == x2Dir )
-				{
-					System.out.println( "INTEIRO!");
-					cmpOtimo( atual );
-					if( atual == otimo )
-					{
-						System.out.println( "OTIMO");
-					}
+                boolean x1_int = x1Esq.compareTo( x1Dir ) == 0;
+                boolean x2_int = x2Esq.compareTo( x2Dir ) == 0;
 
-					Matriz srcMat = atual.obtSrcMat();
-				}
-				else
-				{
-					int cont = 1;
-					String[] resEsq, resDir;
-					Matriz srcMat = atual.obtSrcMat();
+                if( x1_int && x2_int )
+                {
+                    // Uma vez que o teto e o piso são iguais, então é inteiro
+                    cmpOtimo( atual );
+                }
+                else if( atual.obtNivel() < MAX_NIVEIS )
+                {
+                    String[] resEsq, resDir;
+                    Matriz srcMat = atual.obtSrcMat();
 
-					if( x1Esq != x1Dir )
-					{	
-						System.out.println( "No " + ( numNos ) + " e No " + ( numNos + 1 ) );
-						System.out.println( "x1 <= " + x1Esq + " e x1 >=" + x1Dir );
-						resEsq = new String[]{ x1Esq + "" , "1" , "0" , "<="};
-						atual.defNo( 1 , No.ESQ, srcMat , resEsq , numNos++ );
-						No esq = atual.obtNo( 1 , No.ESQ );
+                    // Caso x2 não seja inteiro
+                    if( !x1_int )
+                    {
+                        resEsq = new String[]{ x1Esq.toString() , "1" , "0" , "<="};
+                        atual.defNo( 1 , No.ESQ, srcMat , resEsq , numNos++ );
+                        No esq = atual.obtNo( 1 , No.ESQ );
 
-						resDir = new String[]{ x1Dir + "" , "1" , "0" , ">="};
-						atual.defNo( 1 , No.DIR, srcMat , resDir , numNos++ );
-						No dir = atual.obtNo( 1 , No.DIR );
+                        resDir = new String[]{ x1Dir.toString() , "1" , "0" , ">="};
+                        atual.defNo( 1 , No.DIR, srcMat , resDir , numNos++ );
+                        No dir = atual.obtNo( 1 , No.DIR );
 
-						pilha.add( esq ); pilha.add( dir );
-					}
+                        pilha.add( esq ); pilha.add( dir );
+                    }
 
-					if( x2Esq != x2Dir )
-					{
-						System.out.println( "No " + ( numNos ) + " e No " + ( numNos + 1 ) );
-						System.out.println( "x2 <= " + x2Esq + " e x2 >=" + x2Dir );
+                    // Caso x2 não seja inteiro
+                    if( !x2_int )
+                    {
+                        resEsq = new String[]{ x2Esq.toString() , "0" , "1" , "<="};
+                        atual.defNo( 2 , No.ESQ, srcMat , resEsq , numNos++ );
+                        No esq = atual.obtNo( 2 , No.ESQ );
 
-						resEsq = new String[]{ x2Esq + "" , "0" , "1" , "<="};
-						atual.defNo( 2 , No.ESQ, srcMat , resEsq , numNos++ );
-						No esq = atual.obtNo( 2 , No.ESQ );
+                        resDir = new String[]{ x2Dir.toString() , "0" , "1" , ">="};
+                        atual.defNo( 2 , No.DIR, srcMat , resDir , numNos++ );
+                        No dir = atual.obtNo( 2 , No.DIR );
 
-						resDir = new String[]{ x2Dir + "" , "0" , "1" , ">="};
-						atual.defNo( 2 , No.DIR, srcMat , resDir , numNos++ );
-						No dir = atual.obtNo( 2 , No.DIR );
+                        pilha.add( esq ); pilha.add( dir );
+                    }
+                }
+            }
+        }
 
-						pilha.add( esq ); pilha.add( dir );
-					}
-				}
-			}
-		}
+        // Encontrou pelo menos um candidato a otimo
+        if( otimo != null )
+        {
+            otimo.defTSCod(OTIMO);
+        }
+    }
 
-		if( otimo != null )
-		{
-			otimo.defTSCod(OTIMO);
-		}
-	}
-
+	/**
+	* Compara o no em parametro se ele é uma resposta
+	* melhor do que a conhecida ate o momento. Caso seja,
+	* este sera o novo otimo
+	*
+	* @param no: No a ser analisado
+	*/
 	private void cmpOtimo( No no )
 	{
 		if( otimo == null )
@@ -157,10 +163,10 @@ public class BranchBound
 		else 
 		{
 			Matriz matOtm = otimo.obtSolMat();
-			double zOtimo = matOtm.obtZ();
+			BigDecimal zOtimo = matOtm.obtZ();
 
 			Matriz matNo = no.obtSolMat();
-			double zNo = matNo.obtZ();
+			BigDecimal zNo = matNo.obtZ();
 
 			// SE MAX -> tipo = 1
 			// 	x > otimo
@@ -170,9 +176,10 @@ public class BranchBound
 			// 	x > otimo
 			// 		TRUE : < 0 
 			// 		FALSE : > 0 <-
-			double diff = ( zNo - zOtimo ) * tipo;
+			BigDecimal diff = zNo.subtract( zOtimo ).multiply( BigDecimal.valueOf( tipo ) );
+			boolean mai_zero = diff.compareTo( BigDecimal.ZERO ) > 0;
 
-			if( diff > 0 )
+			if( mai_zero )
 			{
 				otimo.defTSCod(CAND);
 				otimo = no;
@@ -184,6 +191,12 @@ public class BranchBound
 		}
 	}
 
+	/**
+	* Converte para String a mensagem referente a solucao
+	* do BaB
+	*
+	* @return Mensagem da solucao do problema
+	*/
 	public String toStrSolMsg()
 	{
 		String msg = "Nao existe solucao inteira!";
@@ -201,46 +214,57 @@ public class BranchBound
 		return msg;
 	}
 
+	/**
+	* Converte para uma lista todos os nos desta arvore
+	* utilizando o conceito de busca em largura
+	*
+	* @return Lista contendo todos os nos dessa arvore
+	*/
 	public ArrayList<No> toList()
 	{
 		ArrayList<No> lista = new ArrayList<No>();
-		Queue<No> pilha = new LinkedList<No>();
+		Queue<No> fila = new LinkedList<No>();
 
-		pilha.add(raiz);
+		fila.add(raiz);
 
-		while( !pilha.isEmpty() )
+		while( !fila.isEmpty() )
 		{
-			No atual = pilha.remove();
+			No atual = fila.remove();
 			lista.add( atual );
 
 			No x1Esq = atual.obtNo( 1 , No.ESQ );
 			if( x1Esq != null )
 			{
-				pilha.add( x1Esq );
+				fila.add( x1Esq );
 			}
 
 			No x1Dir = atual.obtNo( 1 , No.DIR );
 			if( x1Dir != null )
 			{
-				pilha.add( x1Dir );
+				fila.add( x1Dir );
 			}
 
 			No x2Esq = atual.obtNo( 2 , No.ESQ );
 			if( x2Esq != null )
 			{
-				pilha.add( x2Esq );
+				fila.add( x2Esq );
 			}
 
 			No x2Dir = atual.obtNo( 2 , No.DIR );
 			if( x2Dir != null )
 			{
-				pilha.add( x2Dir );
+				fila.add( x2Dir );
 			}
 		}
 
 		return lista;
 	}
 
+	/**
+	* Retorna o no raiz desta arvore
+	*
+	* @return No raiz desta arvore
+	*/
 	public No obtRaiz()
 	{
 		return raiz;
