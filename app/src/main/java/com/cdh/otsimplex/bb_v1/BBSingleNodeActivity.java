@@ -29,12 +29,44 @@ public class BBSingleNodeActivity extends AppCompatActivity implements View.OnCl
 
     private Drawable imp, cand, best, empty;
 
+    private OnSwipeTouchListener onSwipeTouchListener;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bbsingle_node);
 
         current_no = BBData.root;
+
+        onSwipeTouchListener = new OnSwipeTouchListener(this) {
+            @Override
+            public void onSwipeTop() {
+                super.onSwipeTop();
+                if (x_parent.getVisibility() == View.VISIBLE) {
+                    current_no = current_no.obtPai();
+                    updateViews();
+                }
+            }
+
+            @Override
+            public void onSwipeLeft() {
+                super.onSwipeLeft();
+                if (x1_left.getVisibility() == View.VISIBLE) {
+
+                } else if (x1_right.getVisibility() == View.VISIBLE) {
+
+                }
+            }
+
+            @Override
+            public void onSwipeRight() {
+                super.onSwipeRight();
+                if (x2_left.getVisibility() == View.VISIBLE) {
+
+                } else if (x2_right.getVisibility() == View.VISIBLE) {
+
+                }
+            }
+        };
 
         getDrawables();
 
@@ -134,7 +166,9 @@ public class BBSingleNodeActivity extends AppCompatActivity implements View.OnCl
     }
 
     private void startDetail() {
-//        step_by_step(BBData.createBundles(current_no.obtSimSCS(), );
+//        if (current_no.obtTS() != BranchBound.IMPOSS) {
+            step_by_step(BBData.createBundles(current_no.obtSimSCS(), current_no.obtSrcMat().obtDadosGrafico()));
+//        }
     }
 
     private void step_by_step(ArrayList<Bundle> bundles) {
@@ -145,6 +179,7 @@ public class BBSingleNodeActivity extends AppCompatActivity implements View.OnCl
         }
         startActivity(intent);
     }
+
     @Override
     public void onClick(View v) {
         int id = v.getId();

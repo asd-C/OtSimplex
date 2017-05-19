@@ -122,6 +122,13 @@ public class DetailPageFragment extends Fragment {
             Ponto p1 = pontos.remove(0);
             Ponto p2 = pontos.remove(0);
 
+            Ponto tmp;
+            if (p1.x < p2.x) {
+                tmp = p1;
+                p1 = p2;
+                p2 = tmp;
+            }
+
             LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
                     new DataPoint(p2.x, p2.y),
                     new DataPoint(p1.x, p1.y)

@@ -38,7 +38,9 @@ public class Matriz {
 	private BigDecimal[][] scs;
 	// Matriz de sub celulas inferiores
 	private BigDecimal[][] sci;
-	
+
+	private String[][] dados_grafico;
+
 	/**
 	* Construtor: Este clona a matriz em parametro, para se
 	* tornar sua matriz de SCS. Este construtor se considera
@@ -46,8 +48,10 @@ public class Matriz {
 	*
 	* @param 	mat - Matriz de SCS
 	*/
-	public Matriz( BigDecimal[][] mat ) {
+	public Matriz( BigDecimal[][] mat, String[][] mat_str ) {
 		qtd_vb = mat.length;
+
+        dados_grafico = Cnvt.extrairDados( mat_str );
 
 		vb_ids = new int[qtd_vb];
 		vnb_ids = new int[ QTD_VNB ];
@@ -82,7 +86,7 @@ public class Matriz {
 	*/
 	public Matriz ( String[][] mat )
 	{
-		this( Cnvt.cnvtMat(mat) );
+		this( Cnvt.cnvtMat(mat), mat );
 	}
 
 	/**
@@ -95,7 +99,7 @@ public class Matriz {
 	*/
 	public Matriz( Matriz mat , String[] res )
 	{
-		this( mat, Cnvt.cnvtLinha(res) );
+		this( mat, Cnvt.cnvtLinha(res), res );
 	}
 
 	/**
@@ -107,7 +111,7 @@ public class Matriz {
 	* @param 	mat - Matriz de SCS
 	* @param 	res - Restricao a ser adicionada
 	*/
-	public Matriz( Matriz mat , BigDecimal[] res )
+    public Matriz( Matriz mat , BigDecimal[] res, String[] res_str )
 	{
 		BigDecimal[][] matSCS = mat.obtSCS();
 
@@ -137,6 +141,18 @@ public class Matriz {
 			scs[i][j] = copy( res[j] );		 
 		}
 
+        String[][] mat_str = mat.obtDadosGrafico();
+
+        dados_grafico = new String[ mat_str.length + 1 ][];
+
+        for ( int k = 0; k < mat_str.length; k++ ) {
+            dados_grafico[k] = mat_str[k];
+        }
+        dados_grafico[ mat_str.length ] = new String[ res_str.length - 1 ];
+        for (int j = 0; j < res_str.length - 1; j++) {
+            dados_grafico[ mat_str.length][j] = res_str[j];
+        }
+
 		vnb_ids[0] = 0;
 		vb_ids[0] = 0;
 
@@ -153,9 +169,9 @@ public class Matriz {
 	* @param 	vnb_ids - Identificadores das VNBs correntes
 	* @param 	vnb_ids - Identificadores das VBs correntes
 	*/
-	public Matriz( BigDecimal[][] mat, int[] vnb_ids, int[] vb_ids ) {
+	public Matriz( BigDecimal[][] mat, int[] vnb_ids, int[] vb_ids, String[][] tmp ) {
 		qtd_vb = mat.length;
-
+        dados_grafico = tmp;
 		this.vb_ids = new int[qtd_vb];
 		this.vnb_ids = new int[ QTD_VNB ];
 
@@ -183,7 +199,7 @@ public class Matriz {
 	* @return Clone parcial desta Matriz
 	*/
 	public Matriz clone() {
-		return new Matriz( scs , vnb_ids , vb_ids );
+		return new Matriz( scs , vnb_ids , vb_ids, dados_grafico );
 	}
 
 	/**
@@ -386,7 +402,7 @@ public class Matriz {
 			}
 		}
 
-		return new Matriz( nova_scs , vnb_ids, vb_ids );
+		return new Matriz( nova_scs , vnb_ids, vb_ids, dados_grafico );
 	}
 	
 	/**
@@ -532,4 +548,9 @@ public class Matriz {
 			System.out.println();
 		}
 	}
+
+    public String[][] obtDadosGrafico()
+    {
+        return dados_grafico;
+    }
 }

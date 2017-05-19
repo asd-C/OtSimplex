@@ -115,4 +115,20 @@ public class Cnvt
 		
 		return vars + " " + eq;
 	}
+
+
+	public static String[][] extrairDados( String[][] mat_str )
+	{
+		String[][] ret = new String[mat_str.length - 1][mat_str[0].length - 1];
+
+		for( int i = 1; i < mat_str.length; i++ )
+		{
+			for( int j = 0; j < mat_str[i].length - 1 ; j++ )
+			{
+				ret[ i - 1 ][ j ] = mat_str[ i ][ j ];
+			}
+		}
+
+		return ret;
+	}
 }
