@@ -44,6 +44,29 @@ public class No
 
 	private int nivel;
 
+	private No pai; //Referencia ao no pai
+
+    public No( No pai, Matriz mat, String[] novaRes, int id , int nivel )
+    {//			^-- Esse parametro foi adicionado
+        ultimaRes = novaRes;
+        this.pai = pai; // <--------------------- Essa linha foi adicionada
+        Matriz novaMat = new Matriz( mat, novaRes );
+        simplex = new Simplex( novaMat );
+
+        this.nivel = nivel;
+        ts = 0;
+        this.id = id;
+
+        filhos = new No[NUM_VARS][NUM_GRAND];
+
+        for( int i = 0; i < NUM_VARS; i++ )
+        {
+            for( int j = 0; j < NUM_GRAND; j++ )
+            {
+                filhos[i][j] = null;
+            }
+        }
+    }
 	/**
 	* Construtor: Constroi um novo no a partir da matriz
 	* inicial do pai, sendo acrescido de uma nova restricao,
@@ -82,24 +105,25 @@ public class No
 	*
 	* @param 	mat - Matriz inicial do problema
 	*/
-	public No( Matriz mat )
-	{
-		ultimaRes = null;
+    public No( Matriz mat )
+    {
+        ultimaRes = null;
 
-		simplex = new Simplex( mat );
-		nivel = 0;
-		id = 0;
+        pai = null;
+        simplex = new Simplex( mat );
+        nivel = 0;
+        id = 0;
 
-		filhos = new No[NUM_VARS][NUM_GRAND];
-		
-		for( int i = 0; i < NUM_VARS; i++ )
-		{
-			for( int j = 0; j < NUM_GRAND; j++ )
-			{
-				filhos[i][j] = null;
-			}
-		}
-	}
+        filhos = new No[NUM_VARS][NUM_GRAND];
+
+        for( int i = 0; i < NUM_VARS; i++ )
+        {
+            for( int j = 0; j < NUM_GRAND; j++ )
+            {
+                filhos[i][j] = null;
+            }
+        }
+    }
 
 	public int obtNivel()
 	{
@@ -243,12 +267,17 @@ public class No
 	* @param 	novaRes - Nova restricao
 	* @param 	idNo - Identificador do No
 	*/
-	public void defNo( int id , int lado, Matriz mat , String[] novaRes , int idNo )
-	{
-		filhos[id-1][lado] = new No( mat , novaRes , idNo, nivel + 1  );
-	}
+    public void defNo( int id , int lado, No pai, Matriz mat , String[] novaRes , int idNo )
+    {								//v-----^-------- Foram adicionados ao metodo
+        filhos[id-1][lado] = new No( pai, mat , novaRes , idNo , nivel + 1 );
+    }
 
-	/**
+    public No obtPai()
+    {
+        return pai;
+    }
+
+    /**
 	* Cria uma representacao em String deste no
 	*
 	* @return Representacao (String) deste no
@@ -269,7 +298,9 @@ public class No
 			{
 				ret += "--- TS" + ts + " ---\n";
 			}
-		}
+		} else {
+            ret += "SOLUCAO IMPOSSIVEL";
+        }
 
 		return ret;
 	}

@@ -17,7 +17,7 @@ public class BBData {
     public static BranchBound bb;
     public static No root;
 
-    private static ArrayList<Bundle> createBundles(ArrayList<Matriz> matrizs, String[][] constraits) {
+    public static ArrayList<Bundle> createBundles(ArrayList<Matriz> matrizs, String[][] constraits) {
         // limpar os parametros da ultima operacao
         ArrayList<Bundle> bundles = new ArrayList<>();
 
@@ -67,6 +67,4 @@ public class BBData {
 
         return bundles;
     }
-
-
 }

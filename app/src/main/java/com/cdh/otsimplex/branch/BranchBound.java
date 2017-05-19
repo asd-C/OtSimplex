@@ -64,88 +64,92 @@ public class BranchBound
 	/**
 	* Obtem a solucao do problema
 	*/
-    private void obtSol()
-    {
-        Stack<No> pilha = new Stack<No>();
+	private void obtSol()
+	{
+		Stack<No> pilha = new Stack<No>();
 
-        pilha.add(raiz);
+		pilha.add(raiz);
 
-        // Para cada no que deve ser expandido
-        while( !pilha.empty() )
-        {
-            No atual = pilha.pop();
+		// Para cada no que deve ser expandido
+		while( !pilha.empty() )
+		{
+			No atual = pilha.pop();
 
-            int codSimplex = atual.obtCodSim();
+			int codSimplex = atual.obtCodSim();
 
-            // Não há como expandir esse no
-            if( codSimplex == Simplex.IMPOSS || codSimplex == Simplex.ILIM )
-            {
-                atual.defTSCod(IMPOSS);
-            }
-            else
-            {
-                // Verificar se a solucao obtida e inteira
-                Matriz mat = atual.obtSolMat();
+			// Não há como expandir esse no
+			if( codSimplex == Simplex.IMPOSS || codSimplex == Simplex.ILIM )
+			{
+				atual.defTSCod(IMPOSS);
+			}
+			else
+			{
+				// Verificar se a solucao obtida e inteira
+				Matriz mat = atual.obtSolMat();
 
-                BigDecimal x1 = mat.obtX_(1);
-                BigDecimal x2 = mat.obtX_(2);
+				BigDecimal x1 = mat.obtX_(1);
+				BigDecimal x2 = mat.obtX_(2);
 
-                BigDecimal x1Esq = x1.setScale(0 , RoundingMode.FLOOR);
-                BigDecimal x1Dir = x1.setScale(0 , RoundingMode.CEILING);
+				BigDecimal x1Esq = x1.setScale(0 , RoundingMode.FLOOR);
+				BigDecimal x1Dir = x1.setScale(0 , RoundingMode.CEILING);
 
-                BigDecimal x2Esq = x2.setScale(0 , RoundingMode.FLOOR);
-                BigDecimal x2Dir = x2.setScale(0 , RoundingMode.CEILING);
+				BigDecimal x2Esq = x2.setScale(0 , RoundingMode.FLOOR);
+				BigDecimal x2Dir = x2.setScale(0 , RoundingMode.CEILING);
 
-                boolean x1_int = x1Esq.compareTo( x1Dir ) == 0;
-                boolean x2_int = x2Esq.compareTo( x2Dir ) == 0;
+				boolean x1_int = x1Esq.compareTo( x1Dir ) == 0;
+				boolean x2_int = x2Esq.compareTo( x2Dir ) == 0;
 
-                if( x1_int && x2_int )
-                {
-                    // Uma vez que o teto e o piso são iguais, então é inteiro
-                    cmpOtimo( atual );
-                }
-                else if( atual.obtNivel() < MAX_NIVEIS )
-                {
-                    String[] resEsq, resDir;
-                    Matriz srcMat = atual.obtSrcMat();
+				if( x1_int && x2_int )
+				{
+					// Uma vez que o teto e o piso são iguais, então é inteiro
+					cmpOtimo( atual );
+				}
+				else if( atual.obtNivel() < MAX_NIVEIS )
+				{
+					String[] resEsq, resDir;
+					Matriz srcMat = atual.obtSrcMat();
 
-                    // Caso x2 não seja inteiro
-                    if( !x1_int )
-                    {
-                        resEsq = new String[]{ x1Esq.toString() , "1" , "0" , "<="};
-                        atual.defNo( 1 , No.ESQ, srcMat , resEsq , numNos++ );
-                        No esq = atual.obtNo( 1 , No.ESQ );
+					// Caso x2 não seja inteiro
+					if( !x1_int )
+					{
+						resEsq = new String[]{ x1Esq.toString() , "1" , "0" , "<="};
+						//						  v----------------- Esse parametro foi adicionado (atual e o no pai)
+						atual.defNo( 1 , No.ESQ, atual, srcMat , resEsq , numNos++ );
+						No esq = atual.obtNo( 1 , No.ESQ );
 
-                        resDir = new String[]{ x1Dir.toString() , "1" , "0" , ">="};
-                        atual.defNo( 1 , No.DIR, srcMat , resDir , numNos++ );
-                        No dir = atual.obtNo( 1 , No.DIR );
+						resDir = new String[]{ x1Dir.toString() , "1" , "0" , ">="};
+						//						  v----------------- Esse parametro foi adicionado (atual e o no pai)
+						atual.defNo( 1 , No.DIR, atual,  srcMat , resDir , numNos++ );
+						No dir = atual.obtNo( 1 , No.DIR );
 
-                        pilha.add( esq ); pilha.add( dir );
-                    }
+						pilha.add( esq ); pilha.add( dir );
+					}
 
-                    // Caso x2 não seja inteiro
-                    if( !x2_int )
-                    {
-                        resEsq = new String[]{ x2Esq.toString() , "0" , "1" , "<="};
-                        atual.defNo( 2 , No.ESQ, srcMat , resEsq , numNos++ );
-                        No esq = atual.obtNo( 2 , No.ESQ );
+					// Caso x2 não seja inteiro
+					if( !x2_int )
+					{
+						resEsq = new String[]{ x2Esq.toString() , "0" , "1" , "<="};
+						//						  v----------------- Esse parametro foi adicionado (atual e o no pai)
+						atual.defNo( 2 , No.ESQ, atual, srcMat , resEsq , numNos++ );
+						No esq = atual.obtNo( 2 , No.ESQ );
 
-                        resDir = new String[]{ x2Dir.toString() , "0" , "1" , ">="};
-                        atual.defNo( 2 , No.DIR, srcMat , resDir , numNos++ );
-                        No dir = atual.obtNo( 2 , No.DIR );
+						resDir = new String[]{ x2Dir.toString() , "0" , "1" , ">="};
+						//						  v----------------- Esse parametro foi adicionado (atual e o no pai)
+						atual.defNo( 2 , No.DIR, atual, srcMat , resDir , numNos++ );
+						No dir = atual.obtNo( 2 , No.DIR );
 
-                        pilha.add( esq ); pilha.add( dir );
-                    }
-                }
-            }
-        }
+						pilha.add( esq ); pilha.add( dir );
+					}
+				}
+			}
+		}
 
-        // Encontrou pelo menos um candidato a otimo
-        if( otimo != null )
-        {
-            otimo.defTSCod(OTIMO);
-        }
-    }
+		// Encontrou pelo menos um candidato a otimo
+		if( otimo != null )
+		{
+			otimo.defTSCod(OTIMO);
+		}
+	}
 
 	/**
 	* Compara o no em parametro se ele é uma resposta

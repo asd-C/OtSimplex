@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.cdh.otsimplex.bb.BBActivity;
 import com.cdh.otsimplex.bb.BBData;
+import com.cdh.otsimplex.bb_v1.BBSingleNodeActivity;
 import com.cdh.otsimplex.branch.BranchBound;
 import com.cdh.otsimplex.detail.DetailActivity;
 import com.cdh.otsimplex.detail.DetailPageFragment;
@@ -403,13 +404,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         result = bb.toStrSolMsg();
         BBData.root = bb.obtRaiz();
 
-//        infobox(result);
+        infobox(result);
     }
 
     public void bb(View v) {
+
         if (verifyInputs()) {
             branchbound();
-            startActivity(new Intent(this, BBActivity.class));
+            startActivity(new Intent(this, BBSingleNodeActivity.class));
         } else {
             infobox("Erro! Verifique seus dados!");
         }

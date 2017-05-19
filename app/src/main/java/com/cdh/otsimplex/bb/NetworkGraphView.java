@@ -13,8 +13,10 @@ import com.cdh.otsimplex.bb.entity.Point;
 import com.cdh.otsimplex.branch.BranchBound;
 import com.cdh.otsimplex.branch.No;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -59,7 +61,11 @@ public class NetworkGraphView extends View {
         }
     }
 
-    float lastX;
+    private void drawNetworkGraph(No no, Point p1, Canvas canvas) {
+        int currentLevel = no.obtNivel();
+        Queue<No> nos = new ArrayDeque<>();
+    }
+
     private void recursiveDraw(No no, Point p1, Canvas canvas) {
         p1 = new Point(p1.x, p1.y);
         Point p2 = new Point();

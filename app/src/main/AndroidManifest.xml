@@ -16,7 +16,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".detail.DetailActivity" />
-        <activity android:name=".bb.BBActivity"></activity>
+        <activity android:name=".bb.BBActivity" />
+        <activity android:name=".bb_v1.BBSingleNodeActivity"></activity>
     </application>
 
 </manifest>
